@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "attendance_unique_idx" ON "attendance" USING btree ("student_id","subject_id","attendance_date");
