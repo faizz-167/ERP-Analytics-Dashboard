@@ -2,15 +2,12 @@ name: Deploy ERP App to Azure
 
 on:
   push:
-    branches: ["main"] # Triggers whenever you push to the 'main' branch
-  workflow_dispatch: # Allows you to click a button to run it manually
+    branches: ["main"]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  # GHCR requires image names to be lowercase.
-  # We hardcode your user/repo here to ensure it matches the package you already created.
   IMAGE_NAME: faizz-167/erp-analytics-dashboard
-  # Your Azure Web App Name (from your logs)
   AZURE_WEBAPP_NAME: "erp-teachers-webapp-dvdkakgshpckdhcy"
 
 jobs:
@@ -18,13 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write # Required to push to GitHub Container Registry
+      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Login to GitHub Container Registry
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -32,8 +28,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. Extract metadata (tags, labels)
-      - name: Extract metadata
+      - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -42,8 +37,6 @@ jobs:
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
 
-      # 3. Build and push Docker image
-      # CRITICAL: We point to 'Dockerfile.bun' specifically
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -52,12 +45,16 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}
+            AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}
+            AZURE_OPENAI_API_VERSION=${{ secrets.AZURE_OPENAI_API_VERSION }}
+            AZURE_OPENAI_API_VERSION=${{ secrets.OPENAI_API_VERSION }}
 
-      # 4. Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          # Tells Azure to pull the specific hash we just built
-          images: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
