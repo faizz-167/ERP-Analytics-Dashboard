@@ -28,7 +28,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -45,13 +45,12 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # --- PASS SECRETS HERE ---
           build-args: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}
             AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}
-            AZURE_OPENAI_DEPLOYMENT_NAME=${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
             AZURE_OPENAI_API_VERSION=${{ secrets.AZURE_OPENAI_API_VERSION }}
+            OPENAI_API_VERSION=${{ secrets.OPENAI_API_VERSION }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
