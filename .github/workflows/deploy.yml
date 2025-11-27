@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: faizz-167/erp-analytics-dashboard
-  AZURE_WEBAPP_NAME: "erp-teachers-webapp-dvdkakgshpckdhcy"
+  AZURE_WEBAPP_NAME: "erp-teachers-webapp"
 
 jobs:
   build-and-deploy:
